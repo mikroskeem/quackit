@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	// ParserAlreadyPresent error
-	ParserAlreadyPresent = Error("Parser with given name is already present")
+	// HandlerAlreadyPresent error
+	HandlerAlreadyPresent = Error("Handler with given name is already present")
 )
 
 // CommandHandler is run on parsed command line
@@ -26,7 +26,7 @@ func (q *Quackit) AddHandler(command string, handler CommandHandler) error {
 		q.handlers = make(map[string]CommandHandler)
 	}
 	if q.handlers[command] != nil {
-		return ParserAlreadyPresent
+		return HandlerAlreadyPresent
 	}
 	q.handlers[command] = handler
 	return nil
