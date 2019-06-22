@@ -101,7 +101,9 @@ tokenize:
 		// Generic command handling (on new lines or separated by semicolons)
 		if c[i] == ';' || c[i] == '\n' {
 			if len(tokens) > 0 {
-				q.runHandler(tokens)
+				if err := q.runHandler(tokens); err != nil {
+					return err
+				}
 				commands = append(commands, tokens)
 				tokens = []string{}
 			}
@@ -122,7 +124,9 @@ tokenize:
 	}
 
 	if len(tokens) > 0 {
-		q.runHandler(tokens)
+		if err := q.runHandler(tokens); err != nil {
+			return err
+		}
 		commands = append(commands, tokens)
 	}
 
@@ -136,7 +140,7 @@ func (q *Quackit) ParsedCommands() [][]string {
 	return q.parsedCommands
 }
 
-func (q *Quackit) runHandler(tokens []string) {
+func (q *Quackit) runHandler(tokens []string) error {
 	name := tokens[0]
 	var args []string
 	if len(tokens) == 1 {
@@ -147,10 +151,10 @@ func (q *Quackit) runHandler(tokens []string) {
 
 	if handler := q.handlers[name]; handler != nil {
 		if err := handler(name, args); err != nil {
-			panic(err)
+			return err
 		}
 	}
-
+	return err
 }
 
 // Error = string
