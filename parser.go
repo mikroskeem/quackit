@@ -154,7 +154,7 @@ func (q *Quackit) runHandler(tokens []string) error {
 			return err
 		}
 	}
-	return err
+	return nil
 }
 
 // Error = string
