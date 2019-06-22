@@ -19,6 +19,10 @@ type Quackit struct {
 	handlers       map[string]CommandHandler
 	parsedCommands [][]string
 	extraContent   []string
+	// Line
+	l int
+	// Column
+	c int
 }
 
 // AddHandler adds an handler for command from configuration
@@ -47,6 +51,8 @@ func (q *Quackit) ParseString(c string) error {
 	maxLen := len(c)
 	maxIndex := maxLen - 1
 	i := 0
+	q.l = 0
+	q.c = 0
 
 	commands := [][]string{}
 	tokens := []string{}
@@ -62,6 +68,7 @@ tokenize:
 		// Skip whitespace
 		if c[i] <= ' ' && c[i] != '\n' {
 			i++
+			q.c++
 			continue tokenize
 		}
 
@@ -69,6 +76,7 @@ tokenize:
 		if c[i] == '#' || (c[i] == '/' && c[i+1] == '/') {
 			for i <= maxLen && c[i] != '\n' {
 				i++
+				q.c++
 			}
 			continue tokenize
 		}
@@ -77,14 +85,17 @@ tokenize:
 		if c[i] == '/' && c[i+1] == '*' {
 			for i <= maxLen && !(c[i] == '*' && c[i+1] == '/') {
 				i++
+				q.c++
 			}
 			i += 2 // Skips `*/`
+			q.c += 2
 			continue tokenize
 		}
 
 		// Quoted string handling
 		if c[i] == '"' {
 			i++
+			q.c++
 			strStart := i
 			for {
 				if c[i] == '"' || i >= maxIndex {
@@ -93,9 +104,11 @@ tokenize:
 					token = strings.TrimSpace(token)
 					tokens = append(tokens, token)
 					i++
+					q.c++
 					continue tokenize
 				}
 				i++
+				q.c++
 			}
 		}
 
@@ -109,6 +122,8 @@ tokenize:
 				tokens = []string{}
 			}
 			i++
+			q.l++
+			q.c = 0
 			continue tokenize
 		}
 
@@ -117,6 +132,7 @@ tokenize:
 		wordStart := i
 		for ok := true; ok; ok = (c[i] > ' ') {
 			i++
+			q.c++
 		}
 
 		token := c[wordStart:i]
@@ -158,6 +174,11 @@ tokenize:
 // ParsedCommands returns array of parsed command arrays
 func (q *Quackit) ParsedCommands() [][]string {
 	return q.parsedCommands
+}
+
+// CurrentPosition returns current reader cursor position
+func (q *Quackit) CurrentPosition() (int, int) {
+	return q.l + 1, q.c + 1
 }
 
 // AddContent queues extra content from Reader to parse
