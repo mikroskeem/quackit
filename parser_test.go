@@ -19,6 +19,11 @@ const (
     bind g "impulse 2; +attack; wait; -attack; impulse 4"
     bind x "say learn2aim"
     `
+
+	testConfig3 = `
+        exec "testConfig2"
+        exec "testConfig1"
+        `
 )
 
 func TestParse(t *testing.T) {
@@ -28,7 +33,7 @@ func TestParse(t *testing.T) {
 
 	// Check parsed command count
 	expectedCount := 4
-	if parsedCount := len(parsedCommands); parsedCount != 4 {
+	if parsedCount := len(parsedCommands); parsedCount != expectedCount {
 		t.Errorf("Expected %d parsed commands, got %d: %s", expectedCount, parsedCount, spew.Sdump(parsedCommands))
 	}
 }
@@ -65,4 +70,27 @@ func TestCallbacks(t *testing.T) {
 	if bindCalled != expectedBinds {
 		t.Errorf("Expected %d binds, got %d: %s", expectedBinds, bindCalled, spew.Sdump(parsedCommands))
 	}
+}
+
+func TestNestedConfigReading(t *testing.T) {
+	q := new(Quackit)
+	q.AddHandler("exec", func(q *Quackit, _ string, args []string) (err error) {
+		if args[0] == "testConfig1" {
+			q.AddContentString(testConfig1)
+		}
+		if args[0] == "testConfig2" {
+			q.AddContentString(testConfig2)
+		}
+		return
+	})
+
+	q.ParseString(testConfig3)
+	parsedCommands := q.ParsedCommands()
+
+	// Check parsed command count
+	expectedCount := 11
+	if parsedCount := len(parsedCommands); parsedCount != expectedCount {
+		t.Errorf("Expected %d parsed commands, got %d: %s", expectedCount, parsedCount, spew.Sdump(parsedCommands))
+	}
+
 }

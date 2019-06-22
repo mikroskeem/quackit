@@ -18,6 +18,7 @@ type CommandHandler = func(q *Quackit, name string, arguments []string) error
 type Quackit struct {
 	handlers       map[string]CommandHandler
 	parsedCommands [][]string
+	extraContent   []string
 }
 
 // AddHandler adds an handler for command from configuration
@@ -132,12 +133,46 @@ tokenize:
 
 	q.parsedCommands = commands
 
+	// If we have extra content to parse (e.g popular `exec` command and command handler
+	// queued its reading as well), then parse them now
+	if q.extraContent != nil && len(q.extraContent) > 0 {
+		finalCommands := commands
+		extra := q.extraContent
+		q.extraContent = nil
+
+		for _, content := range extra {
+			if err := q.ParseString(content); err != nil {
+				return err
+			}
+			for _, command := range q.parsedCommands {
+				finalCommands = append(finalCommands, command)
+			}
+		}
+
+		q.parsedCommands = finalCommands
+	}
+
 	return nil
 }
 
 // ParsedCommands returns array of parsed command arrays
 func (q *Quackit) ParsedCommands() [][]string {
 	return q.parsedCommands
+}
+
+// AddContent queues extra content from Reader to parse
+func (q *Quackit) AddContent(reader io.Reader) {
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(reader)
+	q.AddContentString(buf.String())
+}
+
+// AddContentString queues extra content from string to parse
+func (q *Quackit) AddContentString(content string) {
+	if q.extraContent == nil {
+		q.extraContent = []string{}
+	}
+	q.extraContent = append(q.extraContent, content)
 }
 
 func (q *Quackit) runHandler(tokens []string) error {
