@@ -40,13 +40,13 @@ func TestCallbacks(t *testing.T) {
 	q := new(Quackit)
 
 	// sv_cheats cvar callback
-	q.AddHandler("sv_cheats", func(_ string, args []string) (err error) {
+	q.AddHandler("sv_cheats", func(_ *Quackit, _ string, _ []string) (err error) {
 		cheatsEnabled++
 		return
 	})
 
 	// Bind command callback
-	q.AddHandler("bind", func(_ string, args []string) (err error) {
+	q.AddHandler("bind", func(_ *Quackit, _ string, _ []string) (err error) {
 		bindCalled++
 		return
 	})

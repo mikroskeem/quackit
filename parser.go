@@ -12,7 +12,7 @@ const (
 )
 
 // CommandHandler is run on parsed command line
-type CommandHandler = func(name string, arguments []string) error
+type CommandHandler = func(q *Quackit, name string, arguments []string) error
 
 // Quackit is a Quake/Valve .cfg file parser instance
 type Quackit struct {
@@ -150,7 +150,7 @@ func (q *Quackit) runHandler(tokens []string) error {
 	}
 
 	if handler := q.handlers[name]; handler != nil {
-		if err := handler(name, args); err != nil {
+		if err := handler(q, name, args); err != nil {
 			return err
 		}
 	}
