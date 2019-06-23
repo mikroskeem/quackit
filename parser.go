@@ -44,8 +44,8 @@ func (q *Quackit) Parse(reader io.Reader) error {
 	return q.ParseString(buf.String())
 }
 
-// ParseString parses configuration from string
-// This is based on QuakeSpasm's COM_Parse... well function itself probably dates back to the
+// ParseString parses configuration from string.
+// This is inspired from QuakeSpasm's COM_Parse... well function itself probably dates back to the
 // time when Quake 1 engine was released.
 func (q *Quackit) ParseString(c string) error {
 	maxLen := len(c)
