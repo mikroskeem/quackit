@@ -2,6 +2,7 @@ package quackit
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"strings"
 )
@@ -12,12 +13,12 @@ const (
 )
 
 // CommandHandler is run on parsed command line
-type CommandHandler = func(q *Quackit, name string, arguments []string) error
+type CommandHandler = func(q *Quackit, name string, arguments []Token) error
 
 // Quackit is a Quake/Valve .cfg file parser instance
 type Quackit struct {
 	handlers       map[string]CommandHandler
-	parsedCommands [][]string
+	parsedCommands [][]Token
 	extraContent   []string
 	// Line
 	l int
@@ -54,8 +55,8 @@ func (q *Quackit) ParseString(c string) error {
 	q.l = 0
 	q.c = 0
 
-	commands := [][]string{}
-	tokens := []string{}
+	commands := [][]Token{}
+	tokens := []Token{}
 
 	// Tokenize
 tokenize:
@@ -100,8 +101,7 @@ tokenize:
 			for {
 				if c[i] == '"' || i >= maxIndex {
 					// Time to collect the token
-					token := c[strStart:i]
-					token = strings.TrimSpace(token)
+					token := StringToken{Value: strings.TrimSpace(c[strStart:i])}
 					tokens = append(tokens, token)
 					i++
 					q.c++
@@ -119,7 +119,7 @@ tokenize:
 					return err
 				}
 				commands = append(commands, tokens)
-				tokens = []string{}
+				tokens = []Token{}
 			}
 			i++
 			q.l++
@@ -135,8 +135,7 @@ tokenize:
 			q.c++
 		}
 
-		token := c[wordStart:i]
-		token = strings.TrimSpace(token)
+		token := WordToken{Word: strings.TrimSpace(c[wordStart:i])}
 		tokens = append(tokens, token)
 	}
 
@@ -172,7 +171,7 @@ tokenize:
 }
 
 // ParsedCommands returns array of parsed command arrays
-func (q *Quackit) ParsedCommands() [][]string {
+func (q *Quackit) ParsedCommands() [][]Token {
 	return q.parsedCommands
 }
 
@@ -196,17 +195,20 @@ func (q *Quackit) AddContentString(content string) {
 	q.extraContent = append(q.extraContent, content)
 }
 
-func (q *Quackit) runHandler(tokens []string) error {
-	name := tokens[0]
-	var args []string
+func (q *Quackit) runHandler(tokens []Token) error {
+	name, ok := tokens[0].(WordToken)
+	if !ok {
+		return fmt.Errorf("First token '%s' is not a word token", tokens[0])
+	}
+	var args []Token
 	if len(tokens) == 1 {
-		args = []string{}
+		args = []Token{}
 	} else {
 		args = tokens[1:]
 	}
 
-	if handler := q.handlers[name]; handler != nil {
-		if err := handler(q, name, args); err != nil {
+	if handler := q.handlers[name.Word]; handler != nil {
+		if err := handler(q, name.Word, args); err != nil {
 			return err
 		}
 	}

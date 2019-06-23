@@ -47,13 +47,13 @@ func TestCallbacks(t *testing.T) {
 	q := new(Quackit)
 
 	// sv_cheats cvar callback
-	q.AddHandler("sv_cheats", func(_ *Quackit, _ string, _ []string) (err error) {
+	q.AddHandler("sv_cheats", func(_ *Quackit, _ string, _ []Token) (err error) {
 		cheatsEnabled++
 		return
 	})
 
 	// Bind command callback
-	q.AddHandler("bind", func(_ *Quackit, _ string, _ []string) (err error) {
+	q.AddHandler("bind", func(_ *Quackit, _ string, _ []Token) (err error) {
 		bindCalled++
 		return
 	})
@@ -76,11 +76,11 @@ func TestCallbacks(t *testing.T) {
 
 func TestNestedConfigReading(t *testing.T) {
 	q := new(Quackit)
-	q.AddHandler("exec", func(q *Quackit, _ string, args []string) (err error) {
-		if args[0] == "testConfig1" {
+	q.AddHandler("exec", func(q *Quackit, _ string, args []Token) (err error) {
+		if args[0].(StringToken).Value == "testConfig1" {
 			q.AddContentString(testConfig1)
 		}
-		if args[0] == "testConfig2" {
+		if args[0].(StringToken).Value == "testConfig2" {
 			q.AddContentString(testConfig2)
 		}
 		return
