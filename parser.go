@@ -130,7 +130,7 @@ tokenize:
 		// Regular word handling
 		// Go did not implement do/while loop, this is ugly but works...
 		wordStart := i
-		for ok := true; ok; ok = (c[i] > ' ') {
+		for ok := true; ok; ok = (i <= maxIndex && c[i] > ' ') {
 			i++
 			q.c++
 		}

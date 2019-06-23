@@ -24,6 +24,8 @@ const (
         exec "testConfig2"
         exec "testConfig1"
         `
+
+	testConfig4 = "say"
 )
 
 func TestParse(t *testing.T) {
@@ -92,5 +94,14 @@ func TestNestedConfigReading(t *testing.T) {
 	if parsedCount := len(parsedCommands); parsedCount != expectedCount {
 		t.Errorf("Expected %d parsed commands, got %d: %s", expectedCount, parsedCount, spew.Sdump(parsedCommands))
 	}
+}
 
+func TestParseSingleLine(t *testing.T) {
+	q := new(Quackit)
+	q.ParseString(testConfig4)
+
+	parsedLen := len(q.ParsedCommands())
+	if parsedLen < 1 {
+		t.Errorf("Expected 1 command to be parsed, got %d: %s", parsedLen, spew.Sdump(q.ParsedCommands()))
+	}
 }
