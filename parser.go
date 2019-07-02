@@ -26,6 +26,11 @@ type Quackit struct {
 	c int
 }
 
+// New creates new Quackit instance
+func New() Quackit {
+	return Quackit{}
+}
+
 // AddHandler adds an handler for command from configuration
 func (q *Quackit) AddHandler(command string, handler CommandHandler) error {
 	if q.handlers == nil {
@@ -36,6 +41,12 @@ func (q *Quackit) AddHandler(command string, handler CommandHandler) error {
 	}
 	q.handlers[command] = handler
 	return nil
+}
+
+// AddHandlerChain adds an handler for command from configuration, ignoring already existing handler
+func (q *Quackit) AddHandlerChain(command string, handler CommandHandler) *Quackit {
+	q.AddHandler(command, handler)
+	return q
 }
 
 // Parse parses configuration from io.Reader

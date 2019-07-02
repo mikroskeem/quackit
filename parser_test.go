@@ -29,7 +29,7 @@ const (
 )
 
 func TestParse(t *testing.T) {
-	q := new(Quackit)
+	q := New()
 	q.ParseString(testConfig1)
 	parsedCommands := q.ParsedCommands()
 
@@ -44,7 +44,7 @@ func TestCallbacks(t *testing.T) {
 	bindCalled := 0
 	cheatsEnabled := 0
 
-	q := new(Quackit)
+	q := New()
 
 	// sv_cheats cvar callback
 	q.AddHandler("sv_cheats", func(_ *Quackit, _ string, _ []Token) (err error) {
@@ -75,7 +75,7 @@ func TestCallbacks(t *testing.T) {
 }
 
 func TestNestedConfigReading(t *testing.T) {
-	q := new(Quackit)
+	q := New()
 	q.AddHandler("exec", func(q *Quackit, _ string, args []Token) (err error) {
 		if args[0].(StringToken).Value == "testConfig1" {
 			q.AddContentString(testConfig1)
@@ -97,7 +97,7 @@ func TestNestedConfigReading(t *testing.T) {
 }
 
 func TestParseSingleLine(t *testing.T) {
-	q := new(Quackit)
+	q := New()
 	q.ParseString(testConfig4)
 
 	parsedLen := len(q.ParsedCommands())
